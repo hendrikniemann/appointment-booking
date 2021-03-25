@@ -1,0 +1,7 @@
+[build]
+  functions = "api"
+
+[dev]
+  framework = "#custom"
+  command = "yarn start" # Command to start your dev server
+  port = 8000 # The port that the netlify dev will be accessible on
