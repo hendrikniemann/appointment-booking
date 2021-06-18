@@ -1,62 +1,63 @@
-import { isValid } from 'date-fns';
 import * as React from 'react';
+import { useMutation, useQueryClient } from 'react-query';
+import { createReservation, completeReservation, cancelReservation } from '../api';
+import BookingConfirmation from './BookingConfirmation';
+import Calendar from './Calendar';
+import Checkout from './Checkout';
 
 export type BookingControllerProps = {
-  modelId: string;
-}
+  resourceId: string;
+};
 
 export default function BookingController(props: BookingControllerProps) {
-  const [reservation, setReservation] = useReservation();
-  return (
-
-  );
-}
-
-type Reservation = {
-  id: string;
-  startTime: string;
-  endTime: string;
-}
-
-/**
- * Hook, that saves the current reservation to session storage
- */
-function useReservation(): [Reservation | null, (reservation: Reservation) => void] {
-  const [reservation, _setReservation] = React.useState<Reservation | null>(() => {
-    try {
-      const cachedReservationString = window.sessionStorage.getItem('reservation');
-      if (cachedReservationString) {
-        const cachedReservation = JSON.parse(cachedReservationString);
-        if (
-          typeof cachedReservation === 'object' &&
-          cachedReservation !== null &&
-          typeof cachedReservation.id === 'string' &&
-          typeof cachedReservation.startTime === 'string' &&
-          typeof cachedReservation.endTime === 'string' &&
-          isValid(new Date(cachedReservation.startTime)) &&
-          isValid(new Date(cachedReservation.endTime))
-        ) {
-          return cachedReservation;
-        }
-        console.warn('Existing cached reservation is invalid.');
-      }
-    } finally {
-      return null;
-    }
+  const queryClient = useQueryClient();
+  const createReservationMutation = useMutation(createReservation);
+  const completeReservationMutation = useMutation(completeReservation);
+  const cancelReservationMutation = useMutation(cancelReservation, {
+    onSuccess: () => createReservationMutation.reset(),
+    onSettled: () => queryClient.invalidateQueries(),
   });
+  const reservation = completeReservationMutation.data ?? createReservationMutation.data ?? null;
 
-  function setReservation(reservation: Reservation | null) {
-    try {
-      if (reservation === null) {
-        window.sessionStorage.removeItem('reservation');
-      } else {
-        window.sessionStorage.setItem('reservation', JSON.stringify(reservation))
-      }
-    } catch {
-      console.warn('Updating reservation in session storage failed.');
-    }
-    _setReservation(reservation);
+  function onAppointmentSelect(selection: { startTime: string; endTime: string }) {
+    return createReservationMutation.mutateAsync(selection);
   }
 
-  return [reservation, setReservation];
+  function onCompleteReservation(payload: { name: string; email: string }) {
+    if (reservation) {
+      return completeReservationMutation.mutateAsync({
+        reservationId: reservation?.id,
+        ...payload,
+      });
+    }
+    throw new Error('Cannot complete reservation without selecting a reservation first.');
+  }
+
+  function onCancelRerservation() {
+    // We can only cancel a reservation if it has not been completed yet
+    if (reservation && reservation.completedAt === null) {
+      return cancelReservationMutation.mutateAsync({ reservationId: reservation.id });
+    }
+  }
+
+  if (reservation === null) {
+    return <Calendar resourceId={props.resourceId} onAppointmentSelect={onAppointmentSelect} />;
+  } else if (reservation.completedAt === null) {
+    return (
+      <Checkout
+        // @ts-expect-error
+        error={completeReservationMutation.error?.message}
+        reservation={reservation}
+        onComplete={onCompleteReservation}
+        onCancel={onCancelRerservation}
+      />
+    );
+  } else {
+    return (
+      <BookingConfirmation
+        start={new Date(reservation.bookings[0].startTime)}
+        end={new Date(reservation.bookings[0].endTime)}
+      />
+    );
+  }
 }

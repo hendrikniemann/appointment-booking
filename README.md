@@ -1,27 +1,38 @@
-# Example app with [chakra-ui](https://github.com/chakra-ui/chakra-ui) and Typescript
+# Meeting Booking App with Leasy, React and Chakra-UI
 
-This example features how to use [chakra-ui](https://github.com/chakra-ui/chakra-ui) as the component library within a Next.js app with typescript.
+This open source project uses Leasy to create bookable time slots for your calendar.
+It is meant to be deployed on Netlify, but it should be super easy to adopt it to any serverless environment.
 
-Next.js and chakra-ui have built-in TypeScript declarations, so we'll get autocompletion for their modules straight away.
+## Development
 
-We are connecting the Next.js `_app.js` with `chakra-ui`'s Provider and theme so the pages can have app-wide dark/light mode. We are also creating some components which shows the usage of `chakra-ui`'s style props.
+### Getting started
 
-## Deploy your own
+1. Create a Leasy account and create:
 
-Deploy the example using [Vercel](https://vercel.com?utm_source=github&utm_medium=readme&utm_campaign=next-example):
+   - A single category
+   - A single model and select the created categoy
+   - A single asset and select the created model
+   - A schedule with slots that you want to
+   - A read API key for the frontend
+   - A write API key for the backend
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/git/external?repository-url=https://github.com/vercel/next.js/tree/canary/examples/with-chakra-ui-typescript&project-name=with-chakra-ui-typescript&repository-name=with-chakra-ui-typescript)
+1. Connect your schedule with the created model
+1. Create a new project on Netlify and configure the following secrets
 
-## How to use
+   - MODEL_ID and set your leasy model id
+   - WRITE_API_KEY and set your write API key
 
-### Using `create-next-app`
+1. Repace my picture with yours in `public` and set your social media links
 
-Execute [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app) with [npm](https://docs.npmjs.com/cli/init) or [Yarn](https://yarnpkg.com/lang/en/docs/cli/create/) to bootstrap the example:
+### Development
 
-```bash
-npx create-next-app --example with-chakra-ui-typescript with-chakra-ui-typescript-app
-# or
-yarn create next-app --example with-chakra-ui-typescript with-chakra-ui-typescript-app
+Use the netlify CLI to run `yarn dev`.
+This will connect your
+
+### Analyse bundle size
+
+```
+yarn analyse
 ```
 
-Deploy it to the cloud with [Vercel](https://vercel.com/new?utm_source=github&utm_medium=readme&utm_campaign=next-example) ([Documentation](https://nextjs.org/docs/deployment)).
+Then upload the file to [Bundle Buddy](https://bundle-buddy.com) ✨
